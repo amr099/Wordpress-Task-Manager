@@ -37,14 +37,7 @@ export default function Navigation() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-48" align="end">
-              <DropdownMenuItem data-testid="menu-profile">
-                <FaUser className="mr-3 text-gray-400" />
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem data-testid="menu-settings">
-                <FaCog className="mr-3 text-gray-400" />
-                Settings
-              </DropdownMenuItem>
+              
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={logout} data-testid="menu-logout">
                 <FaSignOutAlt className="mr-3 text-gray-400" />
