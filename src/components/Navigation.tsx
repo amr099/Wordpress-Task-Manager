@@ -24,11 +24,6 @@ export default function Navigation() {
         </div>
 
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" className="relative" data-testid="button-notifications">
-            <FaBell className="text-lg" />
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
-          </Button>
-
           <DropdownMenu>
             <DropdownMenuTrigger asChild data-testid="button-user-menu">
               <Button variant="ghost" className="flex items-center gap-3 p-2">

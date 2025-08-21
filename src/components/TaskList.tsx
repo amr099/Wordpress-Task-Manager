@@ -136,14 +136,14 @@ export default function TaskList({ tasks, onTaskUpdate }: TaskListProps) {
                   </div>
 
                   <div className="flex items-center gap-2 ml-4">
-                    <Button
+                    {/* <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => setEditingTask(task)}
                       data-testid={`button-edit-task-${task.id}`}
                     >
                       <FaEdit className="text-gray-400 hover:text-primary" />
-                    </Button>
+                    </Button> */}
                     <Button
                       variant="ghost"
                       size="icon"
