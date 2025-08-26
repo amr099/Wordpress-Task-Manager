@@ -4,11 +4,10 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-  "dev": "vite",
-  "build": "vite build",
-  "start": "vite"
-}
-,
+    "dev": "vite",
+    "build": "vite build",
+    "start": "vite"
+  },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
@@ -60,6 +59,7 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "react": "^18.3.1",
+    "react-datepicker": "^8.7.0",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.55.0",

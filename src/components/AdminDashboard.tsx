@@ -7,6 +7,8 @@ import { db } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import type { Task, User } from "@shared/schema";
 import { FaUsers, FaTasks, FaCheckCircle, FaClock, FaHourglassHalf, FaDownload, FaRedo, FaExternalLinkAlt, FaCalendar, FaCopy } from "react-icons/fa";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 interface TaskWithUser extends Task {
   user?: User;
@@ -22,6 +24,8 @@ interface TeamMember {
 export default function AdminDashboard() {
   const [tasks, setTasks] = useState<TaskWithUser[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date()); // Default to today
+  const [filterMode, setFilterMode] = useState<"day" | "month">("day"); // Default to filtering by day
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -32,53 +36,65 @@ export default function AdminDashboard() {
   tomorrow.setDate(tomorrow.getDate() + 1);
 
   useEffect(() => {
-    // Listen to users (no orderBy to avoid index requirement)
     const usersQuery = query(collection(db, "users"));
+  
     const unsubscribeUsers = onSnapshot(usersQuery, (querySnapshot) => {
       const usersList: User[] = [];
       querySnapshot.forEach((doc) => {
-        usersList.push({
-          id: doc.id,
-          ...doc.data()
-        } as User);
+        usersList.push({ id: doc.id, ...doc.data() } as User);
       });
-      // Sort by display name on client side
-      usersList.sort((a, b) => a.displayName.localeCompare(b.displayName));
       setUsers(usersList);
     });
+  
+    return () => unsubscribeUsers();
+  }, []);
 
-    // Listen to all tasks (we'll filter on client side)
+  useEffect(() => {
+    const startOfDay = selectedDate
+      ? new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())
+      : new Date();
+    const endOfDay = new Date(startOfDay);
+    endOfDay.setDate(startOfDay.getDate() + 1);
+  
+    const startOfMonth = selectedDate
+      ? new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
+      : new Date();
+    const endOfMonth = new Date(startOfMonth);
+    endOfMonth.setMonth(startOfMonth.getMonth() + 1);
+  
     const tasksQuery = query(collection(db, "tasks"));
-
+  
     const unsubscribeTasks = onSnapshot(tasksQuery, (querySnapshot) => {
       const tasksList: Task[] = [];
       querySnapshot.forEach((doc) => {
         const taskData = { id: doc.id, ...doc.data() } as Task;
-        // Filter for today's tasks on client side
         if (taskData.createdAt) {
-          const taskDate = taskData.createdAt instanceof Date ? taskData.createdAt : new Date((taskData.createdAt as any).seconds * 1000);
-          if (taskDate >= today && taskDate < tomorrow) {
+          const taskDate = taskData.createdAt instanceof Date
+            ? taskData.createdAt
+            : new Date((taskData.createdAt as any).seconds * 1000);
+  
+          if (filterMode === "day" && taskDate >= startOfDay && taskDate < endOfDay) {
+            tasksList.push(taskData);
+          } else if (filterMode === "month" && taskDate >= startOfMonth && taskDate < endOfMonth) {
             tasksList.push(taskData);
           }
         }
       });
-      // Sort by creation date descending on client side
+  
+      // Sort by creation date descending
       tasksList.sort((a, b) => {
         if (!a.createdAt || !b.createdAt) return 0;
         const aDate = a.createdAt instanceof Date ? a.createdAt : new Date((a.createdAt as any).seconds * 1000);
         const bDate = b.createdAt instanceof Date ? b.createdAt : new Date((b.createdAt as any).seconds * 1000);
         return bDate.getTime() - aDate.getTime();
       });
+  
       setTasks(tasksList);
       setLoading(false);
     });
-
-    return () => {
-      unsubscribeUsers();
-      unsubscribeTasks();
-    };
-  }, []);
-
+  
+    return () => unsubscribeTasks();
+  }, [selectedDate, filterMode]);
   // Combine tasks with user data
   const tasksWithUsers: TaskWithUser[] = tasks.map(task => ({
     ...task,
@@ -243,6 +259,25 @@ export default function AdminDashboard() {
         </div>
         
         <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
+  {/* Date Picker */}
+  <DatePicker
+    selected={selectedDate}
+    onChange={(date) => setSelectedDate(date)}
+    className="border rounded px-4 py-2"
+    dateFormat="yyyy-MM-dd"
+  />
+
+  {/* Filter Mode Selector */}
+  <select
+    value={filterMode}
+    onChange={(e) => setFilterMode(e.target.value as "day" | "month")}
+    className="border rounded px-4 py-2"
+  >
+    <option value="day">Filter by Day</option>
+    <option value="month">Filter by Month</option>
+  </select>
+</div>
           <Button 
             onClick={handleExport}
             className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
@@ -346,58 +381,60 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Team Tasks Overview */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Team Tasks - Today</CardTitle>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <FaCalendar />
-            <span data-testid="text-current-date">
-              {today.toLocaleDateString("en-US", { 
-                weekday: "long",
-                year: "numeric", 
-                month: "long", 
-                day: "numeric" 
-              })}
-            </span>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          {teamMembers.length === 0 ? (
-            <div className="p-12 text-center">
-              <div className="text-gray-400 mb-4">
-                <FaTasks className="mx-auto text-4xl" />
+     {/* Team Tasks Overview */}
+<Card>
+  <CardHeader className="flex flex-row items-center justify-between">
+    <CardTitle>Team Tasks</CardTitle>
+    <div className="flex items-center gap-2 text-sm text-gray-500">
+      <FaCalendar />
+      <span data-testid="text-current-date">
+        {selectedDate
+          ? selectedDate.toLocaleDateString("en-US", { 
+              weekday: "long",
+              year: "numeric", 
+              month: "long", 
+              day: "numeric" 
+            })
+          : "Today"}
+      </span>
+    </div>
+  </CardHeader>
+  <CardContent className="p-0">
+    {teamMembers.length === 0 ? (
+      <div className="p-12 text-center">
+        <div className="text-gray-400 mb-4">
+          <FaTasks className="mx-auto text-4xl" />
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No tasks found</h3>
+        <p className="text-gray-600">No tasks available for the selected time range</p>
+      </div>
+    ) : (
+      <div className="divide-y divide-gray-200">
+        {teamMembers.map((member) => (
+          <div key={member.user.id} className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                  <FaUsers className="text-gray-600" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900" data-testid={`text-member-name-${member.user.id}`}>
+                    {member.user.displayName}
+                  </h4>
+                  <p className="text-sm text-gray-500" data-testid={`text-member-email-${member.user.id}`}>
+                    {member.user.email}
+                  </p>
+                </div>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No tasks today</h3>
-              <p className="text-gray-600">No team members have created tasks today</p>
+              <div className="flex items-center gap-4 text-sm">
+                <span className="text-gray-600">
+                  <span data-testid={`text-member-task-count-${member.user.id}`}>{member.taskCount}</span> tasks
+                </span>
+                <span className="text-gray-600">
+                  <span data-testid={`text-member-total-hours-${member.user.id}`}>{member.totalHours}</span> hours
+                </span>
+              </div>
             </div>
-          ) : (
-            <div className="divide-y divide-gray-200">
-              {teamMembers.map((member) => (
-                <div key={member.user.id} className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                        <FaUsers className="text-gray-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-900" data-testid={`text-member-name-${member.user.id}`}>
-                          {member.user.displayName}
-                        </h4>
-                        <p className="text-sm text-gray-500" data-testid={`text-member-email-${member.user.id}`}>
-                          {member.user.email}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm">
-                      <span className="text-gray-600">
-                        <span data-testid={`text-member-task-count-${member.user.id}`}>{member.taskCount}</span> tasks
-                      </span>
-                      <span className="text-gray-600">
-                        <span data-testid={`text-member-total-hours-${member.user.id}`}>{member.totalHours}</span> hours
-                      </span>
-                    </div>
-                  </div>
 
                   <div className="space-y-3 ml-13">
                     {member.tasks.map((task) => (
@@ -406,7 +443,7 @@ export default function AdminDashboard() {
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
                               <h5 className="font-medium text-gray-900" data-testid={`text-admin-task-title-${task.id}`}>
-                                {task.taskDescription || task.trelloTask}
+                                {task.trelloTask}
                               </h5>
 
                             </div>
