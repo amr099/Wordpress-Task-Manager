@@ -443,10 +443,21 @@ export default function AdminDashboard() {
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
                               <h5 className="font-medium text-gray-900" data-testid={`text-admin-task-title-${task.id}`}>
-                                {task.trelloTask}
+                                {task.taskDescription || task.trelloTask}
                               </h5>
 
                             </div>
+
+                            <a 
+                                href={task.trelloTask} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline flex items-center gap-1"
+                                data-testid={`link-admin-task-${task.id}`}
+                              >
+                                <FaExternalLinkAlt className="text-xs" />
+                                <span>Trello Link</span>
+                              </a>
                             
                             <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
                               <a 
