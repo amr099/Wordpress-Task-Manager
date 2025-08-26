@@ -14,6 +14,7 @@ export const tasks = pgTable("tasks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
   trelloTask: text("trello_task").notNull(),
+  taskDescription: text("task_description").notNull(),
   taskLink: text("task_link").notNull(),
   fromTime: timestamp("from_time").notNull(),
   toTime: timestamp("to_time").notNull(),

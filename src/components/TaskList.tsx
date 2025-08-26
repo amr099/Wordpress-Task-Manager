@@ -109,7 +109,7 @@ export default function TaskList({ tasks, onTaskUpdate }: TaskListProps) {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h4 className="font-semibold text-gray-900" data-testid={`text-task-title-${task.id}`}>
-                        {task.trelloTask}
+                        {task.taskDescription || task.trelloTask}
                       </h4>
                     </div>
                     

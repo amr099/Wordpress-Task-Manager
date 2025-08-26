@@ -23,6 +23,7 @@ export default function TaskModal({ open, onOpenChange, task, onTaskUpdate }: Ta
   const [formData, setFormData] = useState({
     trelloTask: task?.trelloTask || "",
     taskLink: task?.taskLink || "",
+    taskDescription: task?.taskDescription || "",
     fromTime: task?.fromTime ? (() => {
       try {
         const date = task.fromTime instanceof Date ? task.fromTime : 
@@ -88,6 +89,7 @@ export default function TaskModal({ open, onOpenChange, task, onTaskUpdate }: Ta
       const taskData = {
         trelloTask: formData.trelloTask,
         taskLink: formData.taskLink,
+        taskDescription: formData.taskDescription,
         fromTime: fromDate,
         toTime: toDate,
         userId: user.id,
@@ -121,6 +123,7 @@ export default function TaskModal({ open, onOpenChange, task, onTaskUpdate }: Ta
         setFormData({
           trelloTask: "",
           taskLink: "",
+          taskDescription: "",
           fromTime: "",
           toTime: "",
         });
@@ -161,6 +164,20 @@ export default function TaskModal({ open, onOpenChange, task, onTaskUpdate }: Ta
               onChange={(e) => handleInputChange("trelloTask", e.target.value)}
               required
               data-testid="input-trello-task"
+            />
+          </div>
+
+           <div>
+            <Label htmlFor="trelloTask" className="text-sm font-medium text-gray-700 mb-2">
+              Task Description <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="trelloTask"
+              placeholder="Enter Trello Link"
+              value={formData.taskDescription}
+              onChange={(e) => handleInputChange("taskDescription", e.target.value)}
+              required
+              data-testid="input-task-description"
             />
           </div>
 
