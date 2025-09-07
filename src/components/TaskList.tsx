@@ -109,9 +109,23 @@ export default function TaskList({ tasks, onTaskUpdate }: TaskListProps) {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h4 className="font-semibold text-gray-900" data-testid={`text-task-title-${task.id}`}>
-                        {task.taskDescription || task.trelloTask}
+                        {task.taskDescription}
                       </h4>
                     </div>
+                   
+
+                    <div className="flex items-center gap-2">
+                        <FaExternalLinkAlt />
+                        <a 
+                          href={task.trelloTask} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                          data-testid={`link-task-${task.id}`}
+                        >
+                          View Trello
+                        </a>
+                      </div>
                     
                     <div className="flex items-center gap-6 text-sm text-gray-600 mb-3">
                       <div className="flex items-center gap-2">
@@ -136,14 +150,14 @@ export default function TaskList({ tasks, onTaskUpdate }: TaskListProps) {
                   </div>
 
                   <div className="flex items-center gap-2 ml-4">
-                    {/* <Button
+                    <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => setEditingTask(task)}
                       data-testid={`button-edit-task-${task.id}`}
                     >
                       <FaEdit className="text-gray-400 hover:text-primary" />
-                    </Button> */}
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"

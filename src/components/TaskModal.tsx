@@ -196,8 +196,6 @@ export default function TaskModal({ open, onOpenChange, task, onTaskUpdate }: Ta
             />
           </div>
 
-
-
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="fromTime" className="text-sm font-medium text-gray-700 mb-2">
